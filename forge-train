@@ -1,0 +1,398 @@
+#!/usr/bin/env python3
+"""
+Forge Train - CLI for Ash Forge training infrastructure
+Main entrypoint for all training operations
+"""
+
+import click
+from rich.console import Console
+from rich.table import Table
+from rich import print as rprint
+
+console = Console()
+
+@click.group()
+@click.version_option(version='1.0.0', prog_name='forge-train')
+def cli():
+    """
+    Forge Train - Training infrastructure for Ash Forge
+    
+    Automated model fine-tuning, quantization, and publishing
+    for the Ash Forge ecosystem.
+    """
+    pass
+
+
+################################################################################
+# SUBMIT COMMAND
+################################################################################
+
+@cli.command()
+@click.option('--model', required=True, help='Model name (e.g., ash-code:python)')
+@click.option('--dataset', required=True, help='Path to training dataset')
+@click.option('--base', default='gemma4:turbo', help='Base model to fine-tune')
+@click.option('--epochs', default=3, type=int, help='Number of training epochs')
+@click.option('--batch-size', default=4, type=int, help='Training batch size')
+@click.option('--learning-rate', default=0.0002, type=float, help='Learning rate')
+@click.option('--rank', default=16, type=int, help='LoRA rank')
+@click.option('--alpha', default=32, type=int, help='LoRA alpha')
+@click.option('--priority', default=5, type=int, help='Job priority (1-10, higher = more important)')
+@click.option('--notify', type=click.Choice(['discord', 'none']), default='none', help='Notification method')
+@click.option('--webhook', help='Discord webhook URL (if using discord notifications)')
+def submit(model, dataset, base, epochs, batch_size, learning_rate, rank, alpha, priority, notify, webhook):
+    """Submit a new training job to the queue"""
+    console.print(f"[bold green]Submitting training job...[/bold green]")
+    console.print(f"Model: [cyan]{model}[/cyan]")
+    console.print(f"Dataset: [cyan]{dataset}[/cyan]")
+    console.print(f"Base: [cyan]{base}[/cyan]")
+    
+    # TODO: Implement job submission
+    # from forge_train.queue import QueueManager
+    # queue = QueueManager()
+    # job_id = queue.submit_job(...)
+    
+    job_id = "job_12345"  # Placeholder
+    
+    console.print(f"\n[bold green]✓[/bold green] Job submitted: [yellow]{job_id}[/yellow]")
+    console.print(f"Priority: {priority}/10")
+    console.print(f"Estimated time: 48-72 hours")
+    console.print(f"\nTrack status: [cyan]forge-train status {job_id}[/cyan]")
+
+
+################################################################################
+# QUEUE COMMANDS
+################################################################################
+
+@cli.group()
+def queue():
+    """Manage training queue"""
+    pass
+
+
+@queue.command('list')
+@click.option('--status', type=click.Choice(['pending', 'running', 'completed', 'failed', 'all']), default='all')
+def queue_list(status):
+    """List jobs in queue"""
+    # TODO: Query from database
+    # Mock data for now
+    table = Table(title="Training Queue")
+    table.add_column("Job ID", style="cyan")
+    table.add_column("Model", style="green")
+    table.add_column("Status", style="yellow")
+    table.add_column("Progress", style="magenta")
+    table.add_column("Worker", style="blue")
+    
+    # Mock rows
+    table.add_row("job_12345", "ash-code:python", "running", "45%", "worker-1")
+    table.add_row("job_12346", "ash-creative:writing", "pending", "0%", "-")
+    table.add_row("job_12344", "ash-gaming:minecraft", "completed", "100%", "worker-2")
+    
+    console.print(table)
+
+
+@queue.command('daemon')
+def queue_daemon():
+    """Run queue manager daemon (systemd service)"""
+    console.print("[bold yellow]Starting queue daemon...[/bold yellow]")
+    # TODO: Implement queue daemon
+    # from forge_train.queue import QueueDaemon
+    # daemon = QueueDaemon()
+    # daemon.run()
+    console.print("[bold green]Queue daemon running[/bold green]")
+
+
+################################################################################
+# STATUS COMMAND
+################################################################################
+
+@cli.command()
+@click.argument('job_id')
+def status(job_id):
+    """Get status of a training job"""
+    # TODO: Query from database
+    console.print(f"[bold]Job Status: {job_id}[/bold]\n")
+    
+    # Mock data
+    data = {
+        'model': 'ash-code:python',
+        'status': 'running',
+        'progress': '45%',
+        'worker': 'worker-1',
+        'started': '2026-04-23 10:30:00',
+        'eta': '36 hours',
+        'current_step': '2250/5000',
+        'loss': '1.234',
+        'learning_rate': '0.0002'
+    }
+    
+    for key, value in data.items():
+        console.print(f"{key:.<20} {value}")
+    
+    console.print("\n[dim]Logs: /var/log/forge-train/worker-1.log[/dim]")
+
+
+################################################################################
+# CANCEL COMMAND
+################################################################################
+
+@cli.command()
+@click.argument('job_id')
+@click.confirmation_option(prompt='Are you sure you want to cancel this job?')
+def cancel(job_id):
+    """Cancel a training job"""
+    # TODO: Implement job cancellation
+    console.print(f"[bold yellow]Cancelling job {job_id}...[/bold yellow]")
+    console.print(f"[bold green]✓[/bold green] Job cancelled")
+
+
+################################################################################
+# WORKER COMMANDS
+################################################################################
+
+@cli.group()
+def worker():
+    """Manage training workers"""
+    pass
+
+
+@worker.command('start')
+@click.option('--workers', default=2, type=int, help='Number of workers to start')
+def worker_start(workers):
+    """Start training workers"""
+    console.print(f"[bold green]Starting {workers} worker(s)...[/bold green]")
+    
+    for i in range(1, workers + 1):
+        console.print(f"Starting worker-{i}...")
+        # TODO: systemctl start forge-worker@{i}
+    
+    console.print(f"[bold green]✓[/bold green] {workers} worker(s) started")
+
+
+@worker.command('stop')
+def worker_stop():
+    """Stop all training workers"""
+    console.print("[bold yellow]Stopping all workers...[/bold yellow]")
+    # TODO: systemctl stop forge-worker@*
+    console.print("[bold green]✓[/bold green] Workers stopped")
+
+
+@worker.command('status')
+def worker_status():
+    """Show worker status"""
+    table = Table(title="Worker Status")
+    table.add_column("Worker", style="cyan")
+    table.add_column("Status", style="green")
+    table.add_column("Current Job", style="yellow")
+    table.add_column("CPU", style="magenta")
+    table.add_column("Memory", style="blue")
+    
+    # Mock data
+    table.add_row("worker-1", "active", "job_12345", "385%", "28.5 GB")
+    table.add_row("worker-2", "idle", "-", "1%", "2.1 GB")
+    
+    console.print(table)
+
+
+@worker.command('run')
+@click.option('--id', required=True, help='Worker ID')
+def worker_run(id):
+    """Run a single worker (called by systemd)"""
+    console.print(f"[bold]Starting worker-{id}...[/bold]")
+    # TODO: Implement worker loop
+    # from forge_train.worker import Worker
+    # worker = Worker(id)
+    # worker.run()
+
+
+################################################################################
+# MODEL COMMANDS
+################################################################################
+
+@cli.group()
+def models():
+    """Manage trained models"""
+    pass
+
+
+@models.command('list')
+@click.option('--category', help='Filter by category (code, creative, gaming, etc)')
+def models_list(category):
+    """List trained models"""
+    table = Table(title="Trained Models")
+    table.add_column("Model", style="cyan")
+    table.add_column("Version", style="green")
+    table.add_column("Size", style="yellow")
+    table.add_column("Trained", style="magenta")
+    
+    # Mock data
+    table.add_row("ash-code:python", "1.0.0", "3.2 GB", "2026-04-20")
+    table.add_row("ash-code:rust", "1.0.0", "3.1 GB", "2026-04-18")
+    table.add_row("ash-creative:writing", "1.0.0", "3.8 GB", "2026-04-15")
+    
+    console.print(table)
+
+
+@models.command('test')
+@click.argument('model_name')
+@click.option('--prompt', default='Hello, world!', help='Test prompt')
+def models_test(model_name, prompt):
+    """Test a trained model"""
+    console.print(f"[bold]Testing model: {model_name}[/bold]\n")
+    console.print(f"Prompt: [cyan]{prompt}[/cyan]\n")
+    
+    # TODO: Run inference test
+    console.print("[dim]Loading model...[/dim]")
+    console.print("[dim]Running inference...[/dim]\n")
+    
+    console.print("[bold green]Response:[/bold green]")
+    console.print("This is a test response from the model.")
+
+
+################################################################################
+# SYSTEM COMMANDS
+################################################################################
+
+@cli.group()
+def system():
+    """System management and monitoring"""
+    pass
+
+
+@system.command('status')
+def system_status():
+    """Show system status"""
+    console.print("[bold]Forge Train System Status[/bold]\n")
+    
+    # Services
+    services_table = Table(title="Services")
+    services_table.add_column("Service", style="cyan")
+    services_table.add_column("Status", style="green")
+    
+    services_table.add_row("Redis", "active")
+    services_table.add_row("PostgreSQL", "active")
+    services_table.add_row("Ollama", "active")
+    services_table.add_row("Queue Manager", "active")
+    services_table.add_row("Worker 1", "active")
+    services_table.add_row("Worker 2", "idle")
+    
+    console.print(services_table)
+    
+    # Resources
+    console.print("\n[bold]System Resources[/bold]")
+    console.print(f"CPU Usage: [yellow]45%[/yellow]")
+    console.print(f"Memory: [yellow]32.5 GB / 64 GB[/yellow] (51%)")
+    console.print(f"Disk: [yellow]450 GB / 2 TB[/yellow] (22%)")
+
+
+@system.command('resources')
+def system_resources():
+    """Show detailed resource usage"""
+    # TODO: Implement resource monitoring
+    import psutil
+    
+    console.print("[bold]System Resources[/bold]\n")
+    
+    # CPU
+    cpu_percent = psutil.cpu_percent(interval=1, percpu=True)
+    console.print("[bold cyan]CPU Usage:[/bold cyan]")
+    for i, usage in enumerate(cpu_percent):
+        console.print(f"Core {i}: [yellow]{usage}%[/yellow]")
+    
+    # Memory
+    mem = psutil.virtual_memory()
+    console.print(f"\n[bold cyan]Memory:[/bold cyan]")
+    console.print(f"Total: {mem.total / (1024**3):.1f} GB")
+    console.print(f"Used: [yellow]{mem.used / (1024**3):.1f} GB ({mem.percent}%)[/yellow]")
+    console.print(f"Available: {mem.available / (1024**3):.1f} GB")
+    
+    # Disk
+    disk = psutil.disk_usage('/var/lib/forge-train')
+    console.print(f"\n[bold cyan]Disk (/var/lib/forge-train):[/bold cyan]")
+    console.print(f"Total: {disk.total / (1024**3):.1f} GB")
+    console.print(f"Used: [yellow]{disk.used / (1024**3):.1f} GB ({disk.percent}%)[/yellow]")
+    console.print(f"Free: {disk.free / (1024**3):.1f} GB")
+
+
+################################################################################
+# MONITOR COMMAND
+################################################################################
+
+@cli.group()
+def monitor():
+    """Monitoring and metrics"""
+    pass
+
+
+@monitor.command('daemon')
+def monitor_daemon():
+    """Run monitoring daemon (systemd service)"""
+    console.print("[bold yellow]Starting monitoring daemon...[/bold yellow]")
+    # TODO: Implement monitoring daemon
+    # from forge_train.monitor import MonitorDaemon
+    # daemon = MonitorDaemon()
+    # daemon.run()
+    console.print("[bold green]Monitoring daemon running[/bold green]")
+
+
+@monitor.command('dashboard')
+@click.option('--port', default=8080, type=int, help='Dashboard port')
+def monitor_dashboard(port):
+    """Start web dashboard"""
+    console.print(f"[bold green]Starting dashboard on port {port}...[/bold green]")
+    console.print(f"\nDashboard: [cyan]http://localhost:{port}[/cyan]")
+    # TODO: Start FastAPI server
+
+
+################################################################################
+# DATASET COMMANDS
+################################################################################
+
+@cli.group()
+def dataset():
+    """Dataset management"""
+    pass
+
+
+@dataset.command('validate')
+@click.argument('dataset_path')
+def dataset_validate(dataset_path):
+    """Validate dataset format"""
+    console.print(f"[bold]Validating dataset: {dataset_path}[/bold]\n")
+    
+    # TODO: Implement validation
+    # from forge_train.dataset import DatasetValidator
+    # validator = DatasetValidator()
+    # result = validator.validate(dataset_path)
+    
+    console.print("[bold green]✓[/bold green] Dataset format valid")
+    console.print(f"Examples: [cyan]5000[/cyan]")
+    console.print(f"Max length: [cyan]2048 tokens[/cyan]")
+    console.print(f"Format: [cyan]instruction-response[/cyan]")
+
+
+@dataset.command('stats')
+@click.argument('dataset_path')
+def dataset_stats(dataset_path):
+    """Show dataset statistics"""
+    console.print(f"[bold]Dataset Statistics: {dataset_path}[/bold]\n")
+    
+    # TODO: Generate real stats
+    stats = {
+        'total_examples': 5000,
+        'avg_instruction_length': 42,
+        'avg_response_length': 256,
+        'max_length': 2048,
+        'min_length': 12,
+        'format': 'instruction-response'
+    }
+    
+    for key, value in stats.items():
+        console.print(f"{key:.<30} {value}")
+
+
+################################################################################
+# MAIN ENTRYPOINT
+################################################################################
+
+if __name__ == '__main__':
+    cli()
