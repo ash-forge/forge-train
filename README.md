@@ -383,7 +383,7 @@ Apache 2.0 - See [LICENSE](LICENSE) for details
 
 - Website: [ash-forge.com](https://ash-forge.com)
 - GitHub: [github.com/ash-forge](https://github.com/ash-forge)
-- Discord: [Join our community](https://discord.gg/ashforge)
+- Discord: [Join our community](https://discord.gg/DCYC2fFQQ6)
 
 ---
 
